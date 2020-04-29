@@ -19,37 +19,30 @@ const db = knex({
 app.use(cors());
 app.use(bodyParser.json());
 
-const database = {
-  users: [
-    {
-      id: "123",
-      name: "john",
-      email: "john@gmail.com",
-      entries: 0,
-      joined: new Date(),
-      secrets: {
-        users_id: "123",
-        hash: "wghhh",
-      },
-    },
-  ],
-};
-
 app.get("/", (req, res) => {
   db.select("*")
     .from("users")
     .then((users) => {
       res.send(users);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.send("something went wrong");
     });
 });
 
 app.post("/signin", (req, res) => {
   const { email, password } = req.body;
-  if (email === database.users[0].email && password === database.secrets.hash) {
-    res.send("signed in");
-  } else {
-    res.json("access denied");
-  }
+  db.select("*")
+    .from("users")
+    .where("email", "=", email)
+    .then((user) => {
+      res.json(user[0]);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(404).send("unable to get user");
+    });
 });
 
 app.post("/findface", (req, res) => {
@@ -63,14 +56,21 @@ app.post("/findface", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  database.users.push({
-    id: "124",
-    name: req.body.name,
-    email: req.body.email,
-    entries: 0,
-    joined: new Date(),
-  });
-  res.json(database.users[database.users.length - 1]);
+  const { email, name, password } = req.body;
+  db("users")
+    .returning("*")
+    .insert({
+      email: email,
+      name: name,
+      joined: new Date(),
+    })
+    .then((user) => {
+      res.send(user[0]);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).send("unable to register");
+    });
 });
 
 app.get("/profile/:userId", (req, res) => {
