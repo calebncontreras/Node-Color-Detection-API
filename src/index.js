@@ -33,16 +33,57 @@ app.get("/", (req, res) => {
 
 app.post("/signin", (req, res) => {
   const { email, password } = req.body;
-  db.select("*")
-    .from("users")
+  db.select("email", "hash")
+    .from("login")
     .where("email", "=", email)
-    .then((user) => {
-      res.json(user[0]);
+    .then((data) => {
+      const isValid = bcrypt.compareSync(password, data[0].hash);
+      console.log(isValid);
+      if (isValid) {
+        return db
+          .select("*")
+          .from("users")
+          .where("email", "=", email)
+          .then((user) => {
+            res.json(user[0]);
+          })
+          .catch((err) => res.status(400).json("unable to get user"));
+      } else {
+        res.status(404).json("invalid credentials");
+      }
     })
-    .catch((err) => {
-      console.log(err);
-      res.status(404).send("unable to get user");
-    });
+    .catch((err) => res.status(404).json("invalid credentials"));
+});
+
+app.post("/register", (req, res) => {
+  const { email, name, password } = req.body;
+  const hash = bcrypt.hashSync(password);
+  db.transaction((trx) => {
+    trx
+      .insert({
+        hash: hash,
+        email: email,
+      })
+      .into("login")
+      .returning("email")
+      .then((loginEmail) => {
+        return trx("users")
+          .returning("*")
+          .insert({
+            email: loginEmail[0],
+            name: name,
+            joined: new Date(),
+          })
+          .then((user) => {
+            res.json(user[0]);
+          });
+      })
+      .then(trx.commit)
+      .catch(trx.rollback);
+  }).catch((err) => {
+    console.log(err);
+    res.status(400).send("unable to register");
+  });
 });
 
 app.post("/findface", (req, res) => {
@@ -53,24 +94,6 @@ app.post("/findface", (req, res) => {
     }
   });
   res.json("nope");
-});
-
-app.post("/register", (req, res) => {
-  const { email, name, password } = req.body;
-  db("users")
-    .returning("*")
-    .insert({
-      email: email,
-      name: name,
-      joined: new Date(),
-    })
-    .then((user) => {
-      res.send(user[0]);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(400).send("unable to register");
-    });
 });
 
 app.get("/profile/:userId", (req, res) => {
