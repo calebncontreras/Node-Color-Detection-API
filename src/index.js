@@ -86,14 +86,19 @@ app.post("/register", (req, res) => {
   });
 });
 
-app.post("/findface", (req, res) => {
-  database.users.forEach((user) => {
-    if (user.email === req.body.email) {
-      user.entries++;
-      res.json(user);
-    }
-  });
-  res.json("nope");
+app.put("/detectSuccess", (req, res) => {
+  const user = req.body;
+  db.returning("*")
+    .select("entries")
+    .from("users")
+    .where("id", "=", user.id)
+    .increment("entries", 1)
+    .then((user) => {
+      res.json(user[0]);
+    })
+    .catch((err) => {
+      console.log("/detectSuccess error: ", err);
+    });
 });
 
 app.get("/profile/:userId", (req, res) => {
