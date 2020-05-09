@@ -3,7 +3,9 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import bcrypt from "bcrypt-nodejs";
 import knex from "knex";
-
+import * as image from "./controllers/image";
+import * as signin from "./controllers/signin";
+import * as register from "./controllers/register";
 const app = express();
 
 const db = knex({
@@ -31,74 +33,20 @@ app.get("/", (req, res) => {
     });
 });
 
-app.post("/signin", (req, res) => {
-  const { email, password } = req.body;
-  db.select("email", "hash")
-    .from("login")
-    .where("email", "=", email)
-    .then((data) => {
-      const isValid = bcrypt.compareSync(password, data[0].hash);
-      console.log(isValid);
-      if (isValid) {
-        return db
-          .select("*")
-          .from("users")
-          .where("email", "=", email)
-          .then((user) => {
-            res.json(user[0]);
-          })
-          .catch((err) => res.status(400).json("unable to get user"));
-      } else {
-        res.status(404).json("invalid credentials");
-      }
-    })
-    .catch((err) => res.status(404).json("invalid credentials"));
-});
-
 app.post("/register", (req, res) => {
-  const { email, name, password } = req.body;
-  const hash = bcrypt.hashSync(password);
-  db.transaction((trx) => {
-    trx
-      .insert({
-        hash: hash,
-        email: email,
-      })
-      .into("login")
-      .returning("email")
-      .then((loginEmail) => {
-        return trx("users")
-          .returning("*")
-          .insert({
-            email: loginEmail[0],
-            name: name,
-            joined: new Date(),
-          })
-          .then((user) => {
-            res.json(user[0]);
-          });
-      })
-      .then(trx.commit)
-      .catch(trx.rollback);
-  }).catch((err) => {
-    console.log(err);
-    res.status(400).send("unable to register");
-  });
+  register.handleRegister(req, res, db, bcrypt);
 });
 
-app.put("/detectSuccess", (req, res) => {
-  const user = req.body;
-  db.returning("*")
-    .select("entries")
-    .from("users")
-    .where("id", "=", user.id)
-    .increment("entries", 1)
-    .then((user) => {
-      res.json(user[0]);
-    })
-    .catch((err) => {
-      console.log("/detectSuccess error: ", err);
-    });
+app.post("/signin", (req, res) => {
+  signin.handleSignin(req, res, db, bcrypt);
+});
+
+app.post("/image", (req, res) => {
+  image.handleApiCall(req, res);
+});
+
+app.put("/imageSuccess", (req, res) => {
+  image.handleImageSuccess(req, res, db);
 });
 
 app.get("/profile/:userId", (req, res) => {
