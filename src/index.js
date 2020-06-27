@@ -42,7 +42,7 @@ app.post("/signin", (req, res) => {
 });
 
 app.post("/image", (req, res) => {
-  image.handleApiCall(req, res);
+  image.handleApiCall(req, res, db);
 });
 
 app.put("/imageSuccess", (req, res) => {
@@ -58,4 +58,6 @@ app.get("/profile/:userId", (req, res) => {
   // res.json('no user')
 });
 
-app.listen(3000, () => console.log("Example app listening on port 3000!"));
+app.listen(3000, () =>
+  console.log("node-color-detect app running on port 3000!")
+);

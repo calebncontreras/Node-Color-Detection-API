@@ -1,13 +1,18 @@
-import Clarafai from "clarifai";
+import Clarifai from "clarifai";
 
 const app = new Clarifai.App({
   apiKey: "72e02b44ed5943c4b2bc5e1cf6a80c4c",
 });
 
-export const handleApiCall = (req, res) => {
+export const handleApiCall = (req, res, db) => {
+  const { imageURL } = req.body.input;
   app.models
-    .predict(Clarifai.COLOR_MODEL, req.body.input)
+    .predict(clarifai.COLOR_MODEL, imageURL)
     .then((data) => {
+      db("images").insert({
+        imageurl: imageURL,
+        colors: data,
+      });
       res.json(data);
     })
     .catch((error) => {
@@ -29,4 +34,9 @@ export const handleImageSuccess = (req, res, db) => {
     .catch((err) => {
       console.log("/detectSuccess error: ", err);
     });
+};
+
+export const saveImageData = (req, res, db) => {
+  const user = req.body;
+  db("users").insert();
 };
