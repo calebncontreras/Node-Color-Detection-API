@@ -4,9 +4,11 @@
   "description": "An Express/api that serves color-detection-app frontend.",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "build": "babel src --out-dir dist",
-    "serve": "node dist/index.js"
+    "build": "npm run clean && npm run build-babel",
+    "start": "npm run build && node ./build/index.js",
+    "serve": "node dist/index.js",
+    "clean": "rm -rf build && mkdir build",
+    "build-babel": "babel -d ./build ./src -s"
   },
   "repository": {
     "type": "git",
