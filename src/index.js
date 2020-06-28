@@ -58,6 +58,6 @@ app.get("/profile/:userId", (req, res) => {
   // res.json('no user')
 });
 
-app.listen(3000, () =>
+app.listen(process.env.PORT || 3000, () =>
   console.log("node-color-detect app running on port 3000!")
 );
