@@ -1,55 +1,55 @@
-import express from "express";
-import bodyParser from "body-parser";
-import cors from "cors";
-import bcrypt from "bcrypt-nodejs";
-import knex from "knex";
-import * as image from "./controllers/image";
-import * as signin from "./controllers/signin";
-import * as register from "./controllers/register";
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import bcrypt from 'bcrypt-nodejs';
+import knex from 'knex';
+import * as image from './controllers/image';
+import * as signin from './controllers/signin';
+import * as register from './controllers/register';
 const app = express();
 
 const db = knex({
-  client: "pg",
+  client: 'pg',
   connection: {
-    host: "127.0.0.1",
-    user: "postgres",
-    password: "password",
-    database: "smartbrains",
+    host: process.env.DATABASE_URL,
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME,
   },
 });
 
 app.use(cors());
 app.use(bodyParser.json());
 
-app.get("/", (req, res) => {
-  db.select("*")
-    .from("users")
+app.get('/', (req, res) => {
+  db.select('*')
+    .from('users')
     .then((users) => {
       res.send(users);
     })
     .catch((err) => {
       console.log(err);
-      res.send("something went wrong");
+      res.send('something went wrong');
     });
 });
 
-app.post("/register", (req, res) => {
+app.post('/register', (req, res) => {
   register.handleRegister(req, res, db, bcrypt);
 });
 
-app.post("/signin", (req, res) => {
+app.post('/signin', (req, res) => {
   signin.handleSignin(req, res, db, bcrypt);
 });
 
-app.post("/image", (req, res) => {
+app.post('/image', (req, res) => {
   image.handleApiCall(req, res, db);
 });
 
-app.put("/imageSuccess", (req, res) => {
+app.put('/imageSuccess', (req, res) => {
   image.handleImageSuccess(req, res, db);
 });
 
-app.get("/profile/:userId", (req, res) => {
+app.get('/profile/:userId', (req, res) => {
   database.users.forEach((user) => {
     if (user.id === req.params.userId) {
       return res.json(user);
@@ -59,5 +59,5 @@ app.get("/profile/:userId", (req, res) => {
 });
 
 app.listen(process.env.PORT || 3000, () =>
-  console.log("node-color-detect app running on port 3000!")
+  console.log('node-color-detect app running on port 3000!')
 );
