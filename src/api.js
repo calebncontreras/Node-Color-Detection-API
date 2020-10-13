@@ -22,15 +22,16 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-  db.select('*')
-    .from('users')
-    .then((users) => {
-      res.send(users);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.send('something went wrong');
-    });
+  console.log('get/ working');
+  // db.select('*')
+  //   .from('users')
+  //   .then((users) => {
+  //     res.send(users);
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //     res.send('something went wrong');
+  //   });
 });
 
 app.post('/register', (req, res) => {

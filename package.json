@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "An Express/api that serves color-detection-app frontend.",
   "main": "index.js",
+  "engines": {
+    "node": "12.x"
+  },
   "scripts": {
     "build": "npm run clean && npm run build-babel",
     "start": "npm run build && node ./build/api.js",
