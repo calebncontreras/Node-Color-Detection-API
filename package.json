@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "npm run clean && npm run build-babel",
-    "start": "npm run build && node ./build/api.js",
+    "start": "nodemon --require dotenv/config --exec babel-node ./src/api.js",
     "serve": "node dist/api.js",
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s"
